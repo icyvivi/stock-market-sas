@@ -8,7 +8,7 @@ import altair as alt
 import time
 import zipfile
 
-
+from matplotlib.pyplot import axis
 import streamlit as st  # streamlit library
 import pandas as pd  # pandas library
 import yfinance as yf  # yfinance library
@@ -21,7 +21,6 @@ from prophet import Prophet  # prophet library
 from prophet.plot import plot_plotly
 import time  # time library
 from streamlit_option_menu import option_menu  # select_options library
-
 
 # Page title
 st.set_page_config(page_title='ML model builder', page_icon='🏗️',)
