@@ -16,7 +16,7 @@ import datetime  # datetime library
 from datetime import date
 from plotly import graph_objs as go  # plotly library
 from plotly.subplots import make_subplots
-from prophet import Prophet  # prophet library
+#from prophet import Prophet  # prophet library
 # plotly library for prophet model plotting
 from prophet.plot import plot_plotly
 import time  # time library
@@ -31,7 +31,7 @@ with st.expander('About this app'):
   st.info('This app allow users to get stock signals')
 
   st.markdown('**How to use the app?**')
-  st.warning('To engage with the app, go to the sidebar and 1. Select a data set and 2. Adjust the model parameters by adjusting the various slider widgets. As a result, this would initiate the ML model building process, display the model results as well as allowing users to download the generated models and accompanying data.')
+  st.warning('1. Select a stock name and 2. See the prediction.')
 
   st.markdown('**Under the hood**')
   st.markdown('Data sets:')
