@@ -54,10 +54,22 @@ with st.sidebar:
     # Select example data
     st.markdown('**Select company**')
     #df = pd.read_csv('https://raw.githubusercontent.com/dataprofessor/data/master/delaney_solubility_with_descriptors.csv')
-    df = pd.read_csv('/workspaces/stock-market-sas/D05.SI.csv')
+    #df = pd.read_csv('/workspaces/stock-market-sas/D05.SI.csv')
+    ticker = 'D05.SI'
+    df = yf.Ticker(ticker).history(period='max', interval='1d', auto_adjust=False, back_adjust=False).reset_index()
+    df['ticker'] = ticker
+    df['datetime'] = pd.to_datetime(df['Date'])
+    df['date'] = df['datetime'].dt.date
+    #df['time'] = df['datetime'].dt.time
+    df['year'] = df['datetime'].dt.year
+    df['month'] = df['datetime'].dt.month
+    df['day'] = df['datetime'].dt.day
+    df['prediction_target'] = df.groupby(['ticker'], as_index=False)['Adj Close'].pct_change(22).shift(-22)
+    df.dropna(inplace=True)
+    df.drop(columns=['Date', 'ticker', 'datetime', 'date'], inplace=True)
 
     st.header('2. Set Parameters')
-    parameter_split_size = st.slider('Data split ratio (% for Training Set)', 10, 90, 70, 5)
+    parameter_split_size = st.slider('Data split ratio (% for Training Set)', 10, 90, 80, 5)
 
     st.subheader('2.1. Learning Parameters')
     with st.expander('See parameters'):
@@ -89,7 +101,7 @@ if df is not None:
             
         st.write("Splitting data ...")
         time.sleep(sleep_time)
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=(100-parameter_split_size)/100, random_state=parameter_random_state)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=(parameter_split_size)/100, test_size=(100-parameter_split_size)/100, random_state=parameter_random_state)
     
         st.write("Model training ...")
         time.sleep(sleep_time)
