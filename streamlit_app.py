@@ -45,7 +45,7 @@ with st.expander('About this app'):
 - Streamlit for user interface
   ''', language='markdown')
 
-
+import yfinance as yf
 # Sidebar for accepting input parameters
 with st.sidebar:
     # Load data
@@ -53,10 +53,11 @@ with st.sidebar:
 
     # Select example data
     st.markdown('**Select company**')
-    df = pd.read_csv('https://raw.githubusercontent.com/dataprofessor/data/master/delaney_solubility_with_descriptors.csv')
+    #df = pd.read_csv('https://raw.githubusercontent.com/dataprofessor/data/master/delaney_solubility_with_descriptors.csv')
+    df = pd.read_csv('/workspaces/stock-market-sas/D05.SI.csv')
 
     st.header('2. Set Parameters')
-    parameter_split_size = st.slider('Data split ratio (% for Training Set)', 10, 90, 80, 5)
+    parameter_split_size = st.slider('Data split ratio (% for Training Set)', 10, 90, 70, 5)
 
     st.subheader('2.1. Learning Parameters')
     with st.expander('See parameters'):
