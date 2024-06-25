@@ -53,9 +53,10 @@ with st.sidebar:
 
     # Select example data
     st.markdown('**Select company**')
+    ticker = st.select_slider('Select Yahoo ticker', options=['D05.SI', 'NVDA', 'NIO'])
     #df = pd.read_csv('https://raw.githubusercontent.com/dataprofessor/data/master/delaney_solubility_with_descriptors.csv')
     #df = pd.read_csv('/workspaces/stock-market-sas/D05.SI.csv')
-    ticker = 'D05.SI'
+    #ticker = 'D05.SI'
     df = yf.Ticker(ticker).history(period='max', interval='1d', auto_adjust=False, back_adjust=False).reset_index()
     df['ticker'] = ticker
     df['datetime'] = pd.to_datetime(df['Date'])
@@ -150,29 +151,29 @@ if df is not None:
 
     # Display data info
     st.header('Input data', divider='rainbow')
-    col = st.columns(4)
-    col[0].metric(label="No. of samples", value=X.shape[0], delta="")
-    col[1].metric(label="No. of X variables", value=X.shape[1], delta="")
-    col[2].metric(label="No. of Training samples", value=X_train.shape[0], delta="")
-    col[3].metric(label="No. of Test samples", value=X_test.shape[0], delta="")
+    #col = st.columns(4)
+    #col[0].metric(label="No. of samples", value=X.shape[0], delta="")
+    #col[1].metric(label="No. of X variables", value=X.shape[1], delta="")
+    #col[2].metric(label="No. of Training samples", value=X_train.shape[0], delta="")
+    #col[3].metric(label="No. of Test samples", value=X_test.shape[0], delta="")
     
-    with st.expander('Initial dataset', expanded=True):
+    with st.expander(f'Initial dataset : {X.shape[0]} samples with {X.shape[1]} variables', expanded=False):
         st.dataframe(df, height=210, use_container_width=True)
-    with st.expander('Train split', expanded=False):
+    with st.expander(f'Train split : {X_train.shape[0]} samples', expanded=False):
         train_col = st.columns((3,1))
         with train_col[0]:
-            st.markdown('**X**')
+            st.markdown('**X_train**')
             st.dataframe(X_train, height=210, hide_index=True, use_container_width=True)
         with train_col[1]:
-            st.markdown('**y**')
+            st.markdown('**y_train**')
             st.dataframe(y_train, height=210, hide_index=True, use_container_width=True)
-    with st.expander('Test split', expanded=False):
+    with st.expander(f'Test split : {X_test.shape[0]} samples', expanded=False):
         test_col = st.columns((3,1))
         with test_col[0]:
-            st.markdown('**X**')
+            st.markdown('**X_test**')
             st.dataframe(X_test, height=210, hide_index=True, use_container_width=True)
         with test_col[1]:
-            st.markdown('**y**')
+            st.markdown('**y_test**')
             st.dataframe(y_test, height=210, hide_index=True, use_container_width=True)
 
     # Zip dataset files
