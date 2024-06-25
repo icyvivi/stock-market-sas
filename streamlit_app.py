@@ -26,6 +26,9 @@ from streamlit_option_menu import option_menu  # select_options library
 st.set_page_config(page_title='ML model builder', page_icon='🏗️',)
 st.title('🏗️ ML model builder')
 
+#st.markdown('**Select company**')
+ticker = st.select_slider('**Select Yahoo ticker**', options=['D05.SI', 'NVDA', 'NIO'])
+
 with st.expander('About this app'):
   st.markdown('**What can this app do?**')
   st.info('This app allow users to get stock signals')
@@ -52,8 +55,9 @@ with st.sidebar:
     st.header('1.1. Input data')
 
     # Select example data
-    st.markdown('**Select company**')
-    ticker = st.select_slider('Select Yahoo ticker', options=['D05.SI', 'NVDA', 'NIO'])
+    #st.markdown('**Select company**')
+    #ticker = st.select_slider('Select Yahoo ticker', options=['D05.SI', 'NVDA', 'NIO'])
+    
     #df = pd.read_csv('https://raw.githubusercontent.com/dataprofessor/data/master/delaney_solubility_with_descriptors.csv')
     #df = pd.read_csv('/workspaces/stock-market-sas/D05.SI.csv')
     #ticker = 'D05.SI'
@@ -159,7 +163,7 @@ if df is not None:
     
     with st.expander(f'Initial dataset : {X.shape[0]} samples with {X.shape[1]} variables', expanded=False):
         st.dataframe(df, height=210, use_container_width=True)
-    with st.expander(f'Train split : {X_train.shape[0]} samples', expanded=False):
+    with st.expander(f'Train set : {X_train.shape[0]} samples', expanded=False):
         train_col = st.columns((3,1))
         with train_col[0]:
             st.markdown('**X_train**')
@@ -167,7 +171,7 @@ if df is not None:
         with train_col[1]:
             st.markdown('**y_train**')
             st.dataframe(y_train, height=210, hide_index=True, use_container_width=True)
-    with st.expander(f'Test split : {X_test.shape[0]} samples', expanded=False):
+    with st.expander(f'Test set : {X_test.shape[0]} samples', expanded=False):
         test_col = st.columns((3,1))
         with test_col[0]:
             st.markdown('**X_test**')
