@@ -35,8 +35,9 @@ with st.sidebar:
 # read csv file
 stock_df = pd.read_csv("tickers_list.csv")
 #dict_csv = pd.read_csv('tickers_list.csv', header=None, index_col=0).to_dict()[1]  # read csv file
-dict_csv = pd.read_csv('sgx_all_stocks_merged.csv')[['trading_name', 'ticker']].sort_values(['trading_name']).set_index('trading_name').to_dict()['ticker']
-
+#dict_csv = stock_df[['trading_name', 'ticker']].sort_values(['trading_name']).set_index('trading_name').to_dict()['ticker']
+stock_df[['trading_name', 'ticker']].to_csv('ticker_mapping.csv')
+dict_csv = pd.read_csv('ticker_mapping.csv', header=None, index_col=0).to_dict()[1]
 
 # Stock Performance Comparison Section Starts Here
 if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Comparison'
@@ -53,9 +54,9 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
 
     symb_list = []  # list for storing symbols
     for i in dropdown:  # for each asset selected
-        ticker = dict_csv.get(i)  # get symbol from csv file
-        symb_list.append(ticker)  # append symbol to list
-    ticker = symb_list[0]  # forcing to 1 ticker first
+        val = dict_csv.get(i)  # get symbol from csv file
+        symb_list.append(val)  # append symbol to list
+    #ticker = symb_list[0]  # forcing to 1 ticker first
 
 
     def download_ticker(ticker):
@@ -63,7 +64,7 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
         df['ticker'] = ticker
         df['datetime'] = pd.to_datetime(df['Date'])
         df['date'] = df['datetime'].dt.date
-        #df['time'] = df['datetime'].dt.time
+        # df['time'] = df['datetime'].dt.time
         df['year'] = df['datetime'].dt.year
         df['month'] = df['datetime'].dt.month
         df['day'] = df['datetime'].dt.day
@@ -78,17 +79,22 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
         cumret = cumret.fillna(0)  # fill NaN values with 0
         return cumret  # return cumulative return
 
+
+
     if len(dropdown) > 0:  # if user selects atleast one asset
-        #df = relativeret(yf.download(symb_list, start, end))['Adj Close']  # download data from yfinance
-        df = download_ticker(ticker)
-        df = relativeret(df)['Adj Close']  # download data from yfinance
+        start = datetime.date(2000, 1, 1)
+        end = datetime.date.today()
+        # df = relativeret(yf.download(symb_list, start, end))['Adj Close']  # download data from yfinance
+        downloaded_ticker = download_ticker('D05.SI')
+        df = relativeret(downloaded_ticker)['Adj Close']  # download data from yfinance
+        closingPrice = downloaded_ticker['Adj Close']
+        volume = downloaded_ticker['Volume']
         # download data from yfinance
-        raw_df = relativeret(yf.download(symb_list, start, end))
+        raw_df = relativeret(downloaded_ticker)
         raw_df.reset_index(inplace=True)  # reset index
 
-        closingPrice = yf.download(symb_list, start, end)[
-            'Adj Close']  # download data from yfinance
-        volume = yf.download(symb_list, start, end)['Volume']
+        #closingPrice = downloaded_ticker['Adj Close']  # download data from yfinance
+        #volume = downloaded_ticker['Volume']
         
         st.subheader('Raw Data {}'.format(dropdown))
         st.write(raw_df)  # display raw data
