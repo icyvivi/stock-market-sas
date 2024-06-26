@@ -27,7 +27,7 @@ st.set_page_config(page_title='ML model builder', page_icon='🏗️',)
 st.title('🏗️ ML model builder')
 
 #st.markdown('**Select company**')
-ticker = st.select_slider('**Select Yahoo ticker**', options=['D05.SI', 'NVDA', 'NIO'])
+ticker = st.select_slider('**Select ticker**', options=['D05.SI', 'NVDA', 'NIO'])
 
 with st.expander('About this app'):
   st.markdown('**What can this app do?**')
