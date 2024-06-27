@@ -1,5 +1,5 @@
 # StockStream Web App by VAISHNAVI SHARMA & ROHIT MORE
-https://github.com/rohitmore1012/StockStream/blob/main/StockStream.py 
+# https://github.com/rohitmore1012/StockStream/blob/main/StockStream.py 
 
 from matplotlib.pyplot import axis
 import streamlit as st  # streamlit library
