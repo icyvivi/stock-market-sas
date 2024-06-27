@@ -48,13 +48,19 @@ dict_csv = pd.read_csv('ticker_mapping.csv', header=None, index_col=0).to_dict()
 
 # Stock Performance Comparison Section Starts Here
 if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Comparison'
-    st.subheader("Stocks Performance Comparison")
+    st.subheader("Stocks Performance")
     #stock_df["Company Name"]
     tickers = stock_df["trading_name"].sort_values()
     # tickers = stock_df["ticker"]
     #tickers = ['D05.SI', 'NVDA', 'NIO']
+    
     # dropdown for selecting assets
-    dropdown = st.multiselect('Pick your assets', tickers)
+    # dropdown = st.multiselect('Select a company of interest', tickers)
+    
+    dropdown = []
+    dropdown.append(st.selectbox('Select a company of interest :', tickers))
+    st.write(f'dropdown : {dropdown}')
+
 
     with st.spinner('Loading...'):  # spinner while loading
         time.sleep(2)
@@ -78,15 +84,10 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
         df['day'] = df['datetime'].dt.day
         df['prediction_target'] = df.groupby(['ticker'], as_index=False)['Adj Close'].pct_change(22).shift(-22)
         df.dropna(inplace=True)
-        df.drop(columns=['Date', 'ticker', 'datetime', 'date'], inplace=True)
+        #df.drop(columns=['Date', 
+        #                 #'ticker', 
+        #                 'datetime', 'date'], inplace=True)
         return df
-
-    def relativeret(df):  # function for calculating relative return
-        rel = df.pct_change()  # calculate relative return
-        cumret = (1+rel).cumprod() - 1  # calculate cumulative return
-        cumret = cumret.fillna(0)  # fill NaN values with 0
-        return cumret  # return cumulative return
-
 
 
     if len(dropdown) > 0:  # if user selects atleast one asset
@@ -110,8 +111,8 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
         #volume = downloaded_ticker['Volume']
         
         st.subheader('Raw Data {}'.format(dropdown))
-        st.dataframe(df, height=210, hide_index=True, use_container_width=True)
-        st.write(df)  # display raw data
+        st.dataframe(df, height=210, hide_index=False, use_container_width=True)
+        # st.write(df)  # display raw data
         chart = ('Line Chart', 'Area Chart', 'Bar Chart')  # chart types
         # dropdown for selecting chart type
         dropdown1 = st.selectbox('Pick your chart', chart)
@@ -121,7 +122,7 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
         st.subheader('Relative Returns {}'.format(dropdown))
                 
         if (dropdown1) == 'Line Chart':  # if user selects 'Line Chart'
-            st.line_chart(df)  # display line chart
+            st.line_chart(df, x='Date', y='Adj Close')  # display line chart
             # display closing price of selected assets
             st.write("### Closing Price of {}".format(dropdown))
             st.line_chart(closingPrice)  # display line chart
@@ -163,5 +164,6 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
 
     else:  # if user doesn't select any asset
         #dropdown = ['NVDA']
-        st.write('Please select at least one asset')  # display message
+        # st.write('Please select at least one asset')  # display message
+        pass
 # Stock Performance Comparison Section Ends Here
