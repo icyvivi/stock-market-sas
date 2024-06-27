@@ -36,8 +36,15 @@ with st.sidebar:
 stock_df = pd.read_csv("tickers_list.csv")
 #dict_csv = pd.read_csv('tickers_list.csv', header=None, index_col=0).to_dict()[1]  # read csv file
 #dict_csv = stock_df[['trading_name', 'ticker']].sort_values(['trading_name']).set_index('trading_name').to_dict()['ticker']
-stock_df[['trading_name', 'ticker']].to_csv('ticker_mapping.csv')
+stock_df[['trading_name', 'ticker']].to_csv('ticker_mapping.csv', index=False)
+#st.write(f'Tickers')
+#st.dataframe(stock_df[['trading_name', 'ticker']], height=210, hide_index=True, use_container_width=True)
+
 dict_csv = pd.read_csv('ticker_mapping.csv', header=None, index_col=0).to_dict()[1]
+# st.write(f'Ticker dict : {dict_csv}')
+
+#st.dataframe(stock_df[['trading_name', 'ticker']], height=210, hide_index=True, use_container_width=True)
+
 
 # Stock Performance Comparison Section Starts Here
 if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Comparison'
@@ -57,6 +64,7 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
         val = dict_csv.get(i)  # get symbol from csv file
         symb_list.append(val)  # append symbol to list
     #ticker = symb_list[0]  # forcing to 1 ticker first
+    st.write(f'Tickers : {symb_list}')
 
 
     def download_ticker(ticker):
@@ -84,20 +92,26 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
     if len(dropdown) > 0:  # if user selects atleast one asset
         start = datetime.date(2000, 1, 1)
         end = datetime.date.today()
+        # raw_df = relativeret(yf.download(symb_list))
+        df = download_ticker(symb_list[0])
+        # st.dataframe(raw_df, height=210, hide_index=True, use_container_width=True)
+
+        
         # df = relativeret(yf.download(symb_list, start, end))['Adj Close']  # download data from yfinance
-        downloaded_ticker = download_ticker('D05.SI')
-        df = relativeret(downloaded_ticker)['Adj Close']  # download data from yfinance
-        closingPrice = downloaded_ticker['Adj Close']
-        volume = downloaded_ticker['Volume']
+        # downloaded_ticker = download_ticker('D05.SI')
+        closingPrice = df['Adj Close']
+        volume = df['Volume']
         # download data from yfinance
-        raw_df = relativeret(downloaded_ticker)
-        raw_df.reset_index(inplace=True)  # reset index
+        #df = relativeret(raw_df)['Adj Close']  # download data from yfinance
+
+        #raw_df.reset_index(inplace=True)  # reset index
 
         #closingPrice = downloaded_ticker['Adj Close']  # download data from yfinance
         #volume = downloaded_ticker['Volume']
         
         st.subheader('Raw Data {}'.format(dropdown))
-        st.write(raw_df)  # display raw data
+        st.dataframe(df, height=210, hide_index=True, use_container_width=True)
+        st.write(df)  # display raw data
         chart = ('Line Chart', 'Area Chart', 'Bar Chart')  # chart types
         # dropdown for selecting chart type
         dropdown1 = st.selectbox('Pick your chart', chart)
