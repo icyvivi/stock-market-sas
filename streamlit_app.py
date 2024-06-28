@@ -29,38 +29,23 @@ st.title('🏗️ ML model builder')
 
 st.sidebar.write('''# SAS ''')
 with st.sidebar: 
-        sidebar_menu_list = ["Stocks Performance Comparison", "Real-Time Stock Price", "Stock Prediction", 'About']
+        sidebar_menu_list = ["Stock Price", "Stocks Performance Comparison", "Stock Prediction", 'About']
         selected = option_menu("Data Analytics", sidebar_menu_list)
 
 # read csv file
 stock_df = pd.read_csv("tickers_list.csv")
-#dict_csv = pd.read_csv('tickers_list.csv', header=None, index_col=0).to_dict()[1]  # read csv file
-#dict_csv = stock_df[['trading_name', 'ticker']].sort_values(['trading_name']).set_index('trading_name').to_dict()['ticker']
 stock_df[['trading_name', 'ticker']].to_csv('ticker_mapping.csv', index=False)
-#st.write(f'Tickers')
-#st.dataframe(stock_df[['trading_name', 'ticker']], height=210, hide_index=True, use_container_width=True)
-
 dict_csv = pd.read_csv('ticker_mapping.csv', header=None, index_col=0).to_dict()[1]
-# st.write(f'Ticker dict : {dict_csv}')
-
-#st.dataframe(stock_df[['trading_name', 'ticker']], height=210, hide_index=True, use_container_width=True)
-
 
 # Stock Performance Comparison Section Starts Here
 if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Comparison'
     st.subheader("Stocks Performance")
-    #stock_df["Company Name"]
     tickers = stock_df["trading_name"].sort_values()
-    # tickers = stock_df["ticker"]
-    #tickers = ['D05.SI', 'NVDA', 'NIO']
-    
     # dropdown for selecting assets
     # dropdown = st.multiselect('Select a company of interest', tickers)
     
     dropdown = []
     dropdown.append(st.selectbox('Select a company of interest :', tickers))
-    st.write(f'dropdown : {dropdown}')
-
 
     with st.spinner('Loading...'):  # spinner while loading
         time.sleep(2)
@@ -69,101 +54,54 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
     for i in dropdown:  # for each asset selected
         val = dict_csv.get(i)  # get symbol from csv file
         symb_list.append(val)  # append symbol to list
-    #ticker = symb_list[0]  # forcing to 1 ticker first
-    st.write(f'Tickers : {symb_list}')
+    ticker = symb_list[0] # forcing to 1 ticker first
+    st.write(f'Ticker : {ticker}')
 
 
     def download_ticker(ticker):
         df = yf.Ticker(ticker).history(period='max', interval='1d', auto_adjust=False, back_adjust=False).reset_index()
         df['ticker'] = ticker
         df['datetime'] = pd.to_datetime(df['Date'])
-        df['date'] = df['datetime'].dt.date
+        df['date_local'] = df['datetime'].dt.date
         # df['time'] = df['datetime'].dt.time
         df['year'] = df['datetime'].dt.year
         df['month'] = df['datetime'].dt.month
         df['day'] = df['datetime'].dt.day
-        df['prediction_target'] = df.groupby(['ticker'], as_index=False)['Adj Close'].pct_change(22).shift(-22)
-        df.dropna(inplace=True)
+        # df['prediction_target'] = df.groupby(['ticker'], as_index=False)['Adj Close'].pct_change(22).shift(-22)
+        # df.dropna(inplace=True)
         #df.drop(columns=['Date', 
         #                 #'ticker', 
         #                 'datetime', 'date'], inplace=True)
         return df
 
-
-    if len(dropdown) > 0:  # if user selects atleast one asset
-        start = datetime.date(2000, 1, 1)
+    import plotly.express as px
+    if len(dropdown) > 0:  # if user selects at least one asset
+        start = datetime.date(1900, 1, 1)
         end = datetime.date.today()
-        # raw_df = relativeret(yf.download(symb_list))
-        df = download_ticker(symb_list[0])
-        # st.dataframe(raw_df, height=210, hide_index=True, use_container_width=True)
-
-        
-        # df = relativeret(yf.download(symb_list, start, end))['Adj Close']  # download data from yfinance
-        # downloaded_ticker = download_ticker('D05.SI')
+        df = download_ticker(ticker)
         closingPrice = df['Adj Close']
         volume = df['Volume']
-        # download data from yfinance
-        #df = relativeret(raw_df)['Adj Close']  # download data from yfinance
 
-        #raw_df.reset_index(inplace=True)  # reset index
-
-        #closingPrice = downloaded_ticker['Adj Close']  # download data from yfinance
-        #volume = downloaded_ticker['Volume']
-        
-        st.subheader('Raw Data {}'.format(dropdown))
-        st.dataframe(df, height=210, hide_index=False, use_container_width=True)
+        st.subheader('OHLCV')
+        st.dataframe(df.sort_values(['Date'], ascending=False).reset_index(drop=True), height=210, hide_index=False, use_container_width=True)
         # st.write(df)  # display raw data
         chart = ('Line Chart', 'Area Chart', 'Bar Chart')  # chart types
         # dropdown for selecting chart type
-        dropdown1 = st.selectbox('Pick your chart', chart)
-        with st.spinner('Loading...'):  # spinner while loading
-            time.sleep(2)
+        #dropdown1 = st.selectbox('Pick your chart', chart)
+        #with st.spinner('Loading...'):  # spinner while loading
+        #    time.sleep(2)
 
-        st.subheader('Relative Returns {}'.format(dropdown))
-                
-        if (dropdown1) == 'Line Chart':  # if user selects 'Line Chart'
-            st.line_chart(df, x='Date', y='Adj Close')  # display line chart
-            # display closing price of selected assets
-            st.write("### Closing Price of {}".format(dropdown))
-            st.line_chart(closingPrice)  # display line chart
-
-            # display volume of selected assets
-            st.write("### Volume of {}".format(dropdown))
-            st.line_chart(volume)  # display line chart
-
-        elif (dropdown1) == 'Area Chart':  # if user selects 'Area Chart'
-            st.area_chart(df)  # display area chart
-            # display closing price of selected assets
-            st.write("### Closing Price of {}".format(dropdown))
-            st.area_chart(closingPrice)  # display area chart
-
-            # display volume of selected assets
-            st.write("### Volume of {}".format(dropdown))
-            st.area_chart(volume)  # display area chart
-
-        elif (dropdown1) == 'Bar Chart':  # if user selects 'Bar Chart'
-            st.bar_chart(df)  # display bar chart
-            # display closing price of selected assets
-            st.write("### Closing Price of {}".format(dropdown))
-            st.bar_chart(closingPrice)  # display bar chart
-
-            # display volume of selected assets
-            st.write("### Volume of {}".format(dropdown))
-            st.bar_chart(volume)  # display bar chart
-
-        else:
-            st.line_chart(df, width=1000, height=800,
-                          use_container_width=False)  # display line chart
-            # display closing price of selected assets
-            st.write("### Closing Price of {}".format(dropdown))
-            st.line_chart(closingPrice)  # display line chart
-
-            # display volume of selected assets
-            st.write("### Volume of {}".format(dropdown))
-            st.line_chart(volume)  # display line chart
+        #st.subheader('{}'.format(ticker))
+        plotly_fig = px.line(df, x='Date', y='Adj Close', 
+                             template='plotly_dark',
+                             title=ticker)
+        st.write(plotly_fig)
+        #st.line_chart(df, x='Date', y='Adj Close', # width=1000, height=800, 
+        #              use_container_width=False)  # display line chart
+        #st.bar_chart(df, x='Date', y='Volume')  # display bar chart
 
     else:  # if user doesn't select any asset
         #dropdown = ['NVDA']
-        # st.write('Please select at least one asset')  # display message
+        st.write('Please select a company')  # display message
         pass
 # Stock Performance Comparison Section Ends Here
