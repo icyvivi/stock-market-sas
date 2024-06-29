@@ -3,7 +3,7 @@ pandas
 scikit-learn
 altair
 
-ta==0.11.0
+ta
 matplotlib==3.5.2
 pandas==1.4.3
 numpy==1.23.0

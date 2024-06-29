@@ -7,14 +7,16 @@ from sklearn.metrics import mean_squared_error, r2_score
 import altair as alt
 import time
 import zipfile
-#import ta
+import ta
 
 from matplotlib.pyplot import axis
 import streamlit as st  # streamlit library
 import pandas as pd  # pandas library
+import ta.momentum
+import ta.trend
 import yfinance as yf  # yfinance library
 import datetime  # datetime library
-from datetime import date
+from datetime import date, datetime, timedelta
 from plotly import graph_objs as go  # plotly library
 from plotly.subplots import make_subplots
 #from prophet import Prophet  # prophet library
@@ -69,7 +71,11 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
         df['month'] = df['datetime'].dt.month.astype(int)
         df['day'] = df['datetime'].dt.day.astype(int)
         df['transaction_estimate'] = df['Adj Close'] * df['Volume']
-        # df['prediction_target'] = df.groupby(['ticker'], as_index=False)['Adj Close'].pct_change(22).shift(-22)
+        df['ema_20'] = ta.trend._ema(df['Close'], periods=20)
+        df['ema_50'] = ta.trend._ema(df['Close'], periods=50)
+        df['rsi'] = ta.momentum.rsi(df['Close'], window=5)
+        df['cci'] = ta.trend.cci(high=df['High'] ,low=df['Low'] , close=df['Close'], window=5)
+        #df['prediction_target'] = df.groupby(['ticker'], as_index=False)['Adj Close'].pct_change(22).shift(-22)
         # df.dropna(inplace=True)
         #df.drop(columns=['Date', 
         #                 #'ticker', 
@@ -78,14 +84,16 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
 
     import plotly.express as px
     if len(dropdown) > 0:  # if user selects at least one asset
-        start = datetime.date(1900, 1, 1)
-        end = datetime.date.today()
+        #start = datetime.date(1900, 1, 1)
+        #end = datetime.date.today()
         df = download_ticker(ticker)
-        #closingPrice = df['Adj Close']
-        #volume = df['Volume']
-
-        st.subheader('OHLCV')
-        st.dataframe(df.sort_values(['Date'], ascending=False).reset_index(drop=True), height=210, hide_index=False, use_container_width=True)
+        
+        if len(df)==0:
+            st.write("No historical price data for this ticker")
+        else:
+            #st.subheader('OHLCV')
+            #st.dataframe(df.sort_values(['Date'], ascending=False).reset_index(drop=True), height=210, hide_index=False, use_container_width=True)
+            pass
         # st.write(df)  # display raw data
         #chart = ('Line Chart', 'Area Chart', 'Bar Chart')  # chart types
         # dropdown for selecting chart type
@@ -105,20 +113,31 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
         fig_price = df['Adj Close']
         fig_vol = df['Volume']
 
-        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, row_heights=[0.7, 0.3])
+        fig = make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.6, 0.2, 0.2])
         fig.add_trace(go.Candlestick(x=fig_date,
                              open=fig_open, high=fig_high, low=fig_low, close=fig_close,
                              increasing_line_color='green', decreasing_line_color='red',
                              name='OHLC'),
               row=1, col=1)
+        fig.add_trace(go.Line(x=fig_date, y=df['ema_20'],
+                     name='EMA(20)'),
+              row=1, col=1)
+        fig.add_trace(go.Line(x=fig_date, y=df['ema_50'],
+                     name='EMA(50)'),
+              row=1, col=1)
         fig.add_trace(go.Bar(x=fig_date, y=fig_vol,
                      marker=dict(color=np.where(fig_close.diff() >= 0, 'green', 'red')),
                      name='Volume'),
               row=2, col=1)
-
+        fig.add_trace(go.Line(x=fig_date, y=df['rsi'],
+                     name='RSI'),
+              row=3, col=1)
+        fig.add_trace(go.Line(x=fig_date, y=df['cci'],
+                     name='CCI'),
+              row=3, col=1)
 
         # Update layout for better readability
-        fig.update_layout(title = ticker,
+        fig.update_layout(title = f'{dropdown[0]} [{ticker}]',
                           #title=f"{str(df['Company'].unique()[0])} triggers since {str(model_last_date.date())} (Score : Buy {df_backtest[df_backtest['trade_action'] == 'buy']['f1-score'].iloc[0]:.0%} , Sell {df_backtest[df_backtest['trade_action'] == 'sell']['f1-score'].iloc[0]:.0%})",
                         #xaxis_title="Date",
                         yaxis_title="Price",
@@ -134,10 +153,37 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
         fig.update_xaxes(showgrid=False, type='category')
         fig.update_yaxes(showgrid=False, row=1, col=1)
         fig.update_yaxes(showgrid=False, row=2, col=1)
-        st.write(fig)
+        fig.update_yaxes(showgrid=False, row=3, col=1)
+        
         #st.line_chart(df, x='Date', y='Adj Close', # width=1000, height=800, 
         #              use_container_width=False)  # display line chart
         #st.bar_chart(df, x='Date', y='Volume')  # display bar chart
+
+        # Add range selector buttons
+        fig.update_xaxes(
+            #rangeslider=dict(visible=True, bgcolor='rgba(255,255,255,255)',),
+            rangeselector=dict(
+                bgcolor='rgba(0,0,0,0)',
+                buttons=list([
+                    dict(step='all'),
+                    dict(count=5, label='5Y', step='year', stepmode='backward'),
+                    dict(count=2, label='2Y', step='year', stepmode='backward'),
+                    dict(count=1, label='1Y', step='year', stepmode='backward'),
+                    dict(count=6, label='6M', step='month', stepmode='backward'),
+                    dict(count=1, label='YTD', step='year', stepmode='todate'),
+                    ])
+            )
+        )
+        # Center the plot on the selected date range after clicking a range selector button
+        #fig.update_layout(
+        #    xaxis=dict(
+        #        range=[
+        #            str(fig_date.max() - timedelta(weeks=52)),
+        #            str(fig_date.max())
+        #        ]
+        #    ),
+        #)
+        st.write(fig)
 
     else:  # if user doesn't select any asset
         #dropdown = ['NVDA']
