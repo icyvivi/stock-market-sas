@@ -65,8 +65,8 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
         df['date_local'] = df['datetime'].dt.date
         # df['time'] = df['datetime'].dt.time
         df['year'] = df['datetime'].dt.year.astype(int)
-        df['month'] = df['datetime'].dt.month
-        df['day'] = df['datetime'].dt.day
+        df['month'] = df['datetime'].dt.month.astype(int)
+        df['day'] = df['datetime'].dt.day.astype(int)
         df['transaction_estimate'] = df['Adj Close'] * df['Volume']
         # df['prediction_target'] = df.groupby(['ticker'], as_index=False)['Adj Close'].pct_change(22).shift(-22)
         # df.dropna(inplace=True)
