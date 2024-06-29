@@ -2,7 +2,6 @@ streamlit
 pandas
 scikit-learn
 altair
-ta
 
 ta==0.11.0
 matplotlib==3.5.2
