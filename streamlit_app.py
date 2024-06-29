@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 import altair as alt
 import time
 import zipfile
-import ta
+#import ta
 
 from matplotlib.pyplot import axis
 import streamlit as st  # streamlit library
