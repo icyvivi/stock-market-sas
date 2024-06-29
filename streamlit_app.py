@@ -113,7 +113,7 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
         fig_price = df['Adj Close']
         fig_vol = df['Volume']
 
-        fig = make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.6, 0.2, 0.2])
+        fig = make_subplots(rows=4, cols=1, shared_xaxes=True, row_heights=[0.6, 0.2, 0.1, 0.1])
         fig.add_trace(go.Candlestick(x=fig_date,
                              open=fig_open, high=fig_high, low=fig_low, close=fig_close,
                              increasing_line_color='green', decreasing_line_color='red',
@@ -134,7 +134,7 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
               row=3, col=1)
         fig.add_trace(go.Line(x=fig_date, y=df['cci'],
                      name='CCI'),
-              row=3, col=1)
+              row=4, col=1)
 
         # Update layout for better readability
         fig.update_layout(title = f'{dropdown[0]} [{ticker}]',
@@ -142,6 +142,8 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
                         #xaxis_title="Date",
                         yaxis_title="Price",
                         yaxis2_title="Volume",
+                        yaxis3_title="Trend",
+                        yaxis4_title="Momentum",
                         legend_title="Legends",
                         plot_bgcolor='black',
                         paper_bgcolor='black',
@@ -149,11 +151,30 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
                         showlegend=True,
                         xaxis_rangeslider_visible=False)
 
+        # Add annotations at the right end of each line
+        #for trace in fig['data']:
+        #    last_point = trace['y'][-1]
+        #    last_date = trace['x'][-1]
+        #    annotation = dict(
+        #        x=last_date,
+        #        y=last_point,
+        #        xref='x',
+        #        yref='y',
+        #        text=f"{trace['name']}:{last_point:.2f}",
+        #        showarrow=True,
+        #        arrowhead=7,
+        #        ax=0,
+        #        ay=-40,
+        #    )
+        #    fig.add_annotation(annotation)
+
+
         # Remove gridlines
         fig.update_xaxes(showgrid=False, type='category')
         fig.update_yaxes(showgrid=False, row=1, col=1)
         fig.update_yaxes(showgrid=False, row=2, col=1)
         fig.update_yaxes(showgrid=False, row=3, col=1)
+        fig.update_yaxes(showgrid=False, row=4, col=1)
         
         #st.line_chart(df, x='Date', y='Adj Close', # width=1000, height=800, 
         #              use_container_width=False)  # display line chart
