@@ -2,6 +2,7 @@ streamlit
 pandas
 scikit-learn
 altair
+ta
 
 
 matplotlib==3.5.2
