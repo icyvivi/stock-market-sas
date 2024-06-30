@@ -17,6 +17,7 @@ import ta.trend
 import yfinance as yf  # yfinance library
 import datetime  # datetime library
 from datetime import date, datetime, timedelta
+import plotly.express as px
 from plotly import graph_objs as go  # plotly library
 from plotly.subplots import make_subplots
 #from prophet import Prophet  # prophet library
@@ -25,23 +26,58 @@ from prophet.plot import plot_plotly
 import time  # time library
 from streamlit_option_menu import option_menu  # select_options library
 
-# Page title
-st.set_page_config(page_title='ML model builder', layout="wide", #initial_sidebar_state="expanded", 
-page_icon='🏗️')
-st.title('🏗️ ML model builder')
 
-st.sidebar.write('''# SAS ''')
-with st.sidebar: 
-        sidebar_menu_list = ["Stock Price", "Stocks Performance Comparison", "Stock Prediction (For Subscribers)", 'Contact Us']
-        selected = option_menu("Data Analytics", sidebar_menu_list)
+##########
+# Functions
+##########
+def download_ticker(ticker):
+    df = yf.Ticker(ticker).history(period='max', interval='1d', auto_adjust=False, back_adjust=False).reset_index()
+    df['ticker'] = ticker
+    df['datetime'] = pd.to_datetime(df['Date'])
+    df['date_local'] = df['datetime'].dt.date
+    # df['time'] = df['datetime'].dt.time
+    df['year'] = df['datetime'].dt.year.astype(int)
+    df['month'] = df['datetime'].dt.month.astype(int)
+    df['day'] = df['datetime'].dt.day.astype(int)
+    df['transaction_estimate'] = df['Adj Close'] * df['Volume']
+    df['ema_20'] = ta.trend._ema(df['Close'], periods=20)
+    df['ema_50'] = ta.trend._ema(df['Close'], periods=50)
+    df['rsi'] = ta.momentum.rsi(df['Close'], window=5)
+    df['cci'] = ta.trend.cci(high=df['High'] ,low=df['Low'] , close=df['Close'], window=5)
+    #df['prediction_target'] = df.groupby(['ticker'], as_index=False)['Adj Close'].pct_change(22).shift(-22)
+    # df.dropna(inplace=True)
+    #df.drop(columns=['Date', 
+    #                 #'ticker', 
+    #                 'datetime', 'date'], inplace=True)
+    return df
 
 # read csv file
 stock_df = pd.read_csv("tickers_list.csv")
 stock_df[['trading_name', 'ticker']].to_csv('ticker_mapping.csv', index=False)
 dict_csv = pd.read_csv('ticker_mapping.csv', header=None, index_col=0).to_dict()[1]
 
-# Stock Performance Comparison Section Starts Here
-if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Comparison'
+
+
+##########
+# Streamlit
+##########
+
+# Page title
+st.set_page_config(page_title='SAS - Investment Simplified through Data Analytics', layout="wide", #initial_sidebar_state="expanded", 
+page_icon='🏗️')
+st.title('🏗️ SAS - Investment Simplified through Data Analytics')
+
+st.sidebar.write('''# SAS ''')
+with st.sidebar: 
+        sidebar_menu_list = ["Stock Price", 
+                             "TA Signals", 
+                             "Stock Prediction with DA (For Subscribers)", 
+                             "Contact Us"]
+        selected = option_menu("Data Analytics", sidebar_menu_list)
+
+
+# Stock TA Signals Section Starts Here
+if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks TA'
     st.subheader(f"{sidebar_menu_list[0]}")
     tickers = stock_df["trading_name"].sort_values()
     # dropdown for selecting assets
@@ -61,33 +97,92 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
     #st.write(f'Ticker : {ticker}')
 
 
-    def download_ticker(ticker):
-        df = yf.Ticker(ticker).history(period='max', interval='1d', auto_adjust=False, back_adjust=False).reset_index()
-        df['ticker'] = ticker
-        df['datetime'] = pd.to_datetime(df['Date'])
-        df['date_local'] = df['datetime'].dt.date
-        # df['time'] = df['datetime'].dt.time
-        df['year'] = df['datetime'].dt.year.astype(int)
-        df['month'] = df['datetime'].dt.month.astype(int)
-        df['day'] = df['datetime'].dt.day.astype(int)
-        df['transaction_estimate'] = df['Adj Close'] * df['Volume']
-        df['ema_20'] = ta.trend._ema(df['Close'], periods=20)
-        df['ema_50'] = ta.trend._ema(df['Close'], periods=50)
-        df['rsi'] = ta.momentum.rsi(df['Close'], window=5)
-        df['cci'] = ta.trend.cci(high=df['High'] ,low=df['Low'] , close=df['Close'], window=5)
-        #df['prediction_target'] = df.groupby(['ticker'], as_index=False)['Adj Close'].pct_change(22).shift(-22)
-        # df.dropna(inplace=True)
-        #df.drop(columns=['Date', 
-        #                 #'ticker', 
-        #                 'datetime', 'date'], inplace=True)
-        return df
+    import plotly.express as px
+    if len(dropdown) > 0:  # if user selects at least one asset
+        df = download_ticker(ticker)
+
+        fig_date = df['date_local'] #df['Date']
+        fig_open = df['Open']
+        fig_high = df['High']
+        fig_low = df['Low']
+        fig_close = df['Close']
+        fig_price = df['Adj Close']
+        fig_vol = df['Volume']
+
+        if len(df)==0:
+            st.write("No historical price data for this ticker")
+        else:
+            pass
+        fig = px.line(df, x=fig_date, y=df['Adj Close'], title=ticker)
+        # fig.add_trace()
+        # fig.add_trace(px.bar(df, x=fig_date, y=fig_vol, title='Volume'))
+
+        # Update layout for better readability
+        fig.update_layout(title = f'{dropdown[0]} [{ticker}]',
+                        legend_title="Legends",
+                        plot_bgcolor='black',
+                        paper_bgcolor='black',
+                        font=dict(color='white'),
+                        showlegend=True,
+                        xaxis_rangeslider_visible=False)
+
+
+        # Remove gridlines
+        fig.update_xaxes(showgrid=False, type='category')
+        fig.update_yaxes(showgrid=False)
+        
+        # Add range selector buttons
+        fig.update_xaxes(
+            #rangeslider=dict(visible=True, bgcolor='rgba(255,255,255,255)',),
+            rangeselector=dict(
+                bgcolor='rgba(0,0,0,0)',
+                buttons=list([
+                    dict(step='all'),
+                    dict(count=5, label='5Y', step='year', stepmode='backward'),
+                    dict(count=2, label='2Y', step='year', stepmode='backward'),
+                    dict(count=1, label='1Y', step='year', stepmode='backward'),
+                    dict(count=6, label='6M', step='month', stepmode='backward'),
+                    dict(count=1, label='YTD', step='year', stepmode='todate'),
+                    ])
+            )
+        )
+        st.plotly_chart(fig, height=2000)
+
+
+# Stock TA Signals Section Starts Here
+if(selected == sidebar_menu_list[1]):  # if user selects 'Stocks TA'
+    st.subheader(f"{sidebar_menu_list[1]}")
+    tickers = stock_df["trading_name"].sort_values()
+    # dropdown for selecting assets
+    # dropdown = st.multiselect('Select a company of interest', tickers)
+    
+    dropdown = []
+    dropdown.append(st.selectbox('Select a company of interest :', tickers, index=list(tickers).index('DBS')))
+    
+    with st.spinner('Gathering data...'):  # spinner while loading
+        time.sleep(2)
+
+    symb_list = []  # list for storing symbols
+    for i in dropdown:  # for each asset selected
+        val = dict_csv.get(i)  # get symbol from csv file
+        symb_list.append(val)  # append symbol to list
+    ticker = symb_list[0] # forcing to 1 ticker first
+    #st.write(f'Ticker : {ticker}')
+
 
     import plotly.express as px
     if len(dropdown) > 0:  # if user selects at least one asset
-        #start = datetime.date(1900, 1, 1)
-        #end = datetime.date.today()
         df = download_ticker(ticker)
-        
+
+        fig_date = df['date_local'] #df['Date']
+        fig_open = df['Open']
+        fig_high = df['High']
+        fig_low = df['Low']
+        fig_close = df['Close']
+        fig_price = df['Adj Close']
+        fig_vol = df['Volume']
+
+
         if len(df)==0:
             st.write("No historical price data for this ticker")
         else:
@@ -105,13 +200,6 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
         #plotly_fig = px.line(df, x='Date', y='Adj Close', 
         #                     template='plotly_dark',
         #                     title=ticker)
-        fig_date = df['date_local'] #df['Date']
-        fig_open = df['Open']
-        fig_high = df['High']
-        fig_low = df['Low']
-        fig_close = df['Close']
-        fig_price = df['Adj Close']
-        fig_vol = df['Volume']
 
         fig = make_subplots(rows=4, cols=1, shared_xaxes=True, row_heights=[0.5, 0.2, 0.15, 0.15])
         fig.add_trace(go.Candlestick(x=fig_date,
@@ -199,3 +287,17 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks Performance Com
     #    st.write('Please select a company')  # display message
     #    pass
 # Stock Performance Comparison Section Ends Here
+
+
+if(selected == sidebar_menu_list[2]):
+    st.subheader(f"(Stay tuned for insightful contents!)")
+
+if(selected == sidebar_menu_list[3]):
+    st.subheader(f"(Stay tuned for insightful contents!)")
+
+if(selected.lower() == 'contact us'):
+    st.subheader(f"Contact Us")
+    st.write(f"Email : ______@_______.com")
+    st.write(f"Facebook : _________@facebook.com")
+    st.write(f"Telegram : _________")
+    st.write(f"Website : _________.com")
