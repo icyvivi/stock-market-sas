@@ -114,12 +114,25 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks TA'
             st.write("No historical price data for this ticker")
         else:
             pass
-        fig = px.line(df, x=fig_date, y=df['Adj Close'], title=ticker)
-        # fig.add_trace()
-        # fig.add_trace(px.bar(df, x=fig_date, y=fig_vol, title='Volume'))
+        #fig = make_subplots(rows=2, cols=1, shared_xaxes=True, shared_yaxes=False, row_heights=[0.5, 0.5],)
+        #df_sp500 = download_ticker('SPY')
+        #fig.add_trace(go.Line(x=df_sp500['date_local'], y=df_sp500['Adj Close'], name='S&P500'), row=1, col=1)
+        #df_vix = download_ticker('^VIX')
+        #fig.add_trace(go.Line(x=df_vix['date_local'], y=df_vix['Adj Close'], name='VIX'), row=2, col=1, secondary_y=True)
+        fig = make_subplots(#rows=1, cols=1, row_heights=[0.5, 0.5], shared_xaxes=True,
+                            specs=[[{"secondary_y": True}]])
+        df_sp500 = download_ticker('SPY')
+        fig.add_trace(go.Scatter(x=df_sp500['date_local'], y=df_sp500['Adj Close'], name='S&P 500'))
+        df_vix = download_ticker('^VIX')
+        fig.add_trace(go.Scatter(x=df_vix['date_local'], y=df_vix['Adj Close'], name='VIX'), secondary_y=True)
+
+        #fig.update_layout(title="S&P500 vs. VIX")
+        fig.update_xaxes(title_text="Date")
+        fig.update_yaxes(title_text="S&P500 Adj. Close", secondary_y=False)
+        fig.update_yaxes(title_text="VIX Adj. Close", secondary_y=True)
 
         # Update layout for better readability
-        fig.update_layout(title = f'S&P 500 [{ticker}]',
+        fig.update_layout(#title = f'S&P 500 [{ticker}]',
                         legend_title="Legends",
                         plot_bgcolor='black',
                         paper_bgcolor='black',
@@ -127,7 +140,7 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks TA'
                         showlegend=True,
                         xaxis_rangeslider_visible=False)
         
-        fig = px.line(df, x=fig_date, y=df['Adj Close'], title=ticker)
+        #fig = px.line(df, x=fig_date, y=df['Adj Close'], title=ticker)
         #fig_vix = px.line(download_ticker('^VIX'), x='date_local', y='Adj Close', title='VIX')
         #fig.add_trace(px.line(download_ticker('^VIX'), x='date_local', y='Adj Close', title='VIX'))
         #fig_sti = px.line(download_ticker('^STI'), x='date_local', y='Adj Close', title='STI')
@@ -151,7 +164,7 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks TA'
                     dict(count=1, label='1M', step='month', stepmode='backward'),
                     dict(count=1, label='YTD', step='year', stepmode='todate'),
                     ])
-            )
+            ), row=1, col=1,
         )
         st.plotly_chart(fig, height=2000)
 
@@ -202,11 +215,6 @@ if(selected == sidebar_menu_list[1]):  # if user selects 'Stocks TA'
         #dropdown1 = st.selectbox('Pick your chart', chart)
         #with st.spinner('Loading...'):  # spinner while loading
         #    time.sleep(2)
-
-        #st.subheader('{}'.format(ticker))
-        #plotly_fig = px.line(df, x='Date', y='Adj Close', 
-        #                     template='plotly_dark',
-        #                     title=ticker)
 
         fig = make_subplots(rows=4, cols=1, shared_xaxes=True, row_heights=[0.5, 0.2, 0.15, 0.15])
         fig.add_trace(go.Candlestick(x=fig_date,
