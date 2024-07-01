@@ -69,7 +69,7 @@ st.title('🏗️ SAS - Investment Simplified through Data Analytics')
 
 st.sidebar.write('''# SAS ''')
 with st.sidebar: 
-        sidebar_menu_list = ["Stock Price", 
+        sidebar_menu_list = ["Market Indices", 
                              "TA Signals", 
                              "Stock Prediction with DA (For Subscribers)", 
                              "Contact Us"]
@@ -83,22 +83,23 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks TA'
     # dropdown for selecting assets
     # dropdown = st.multiselect('Select a company of interest', tickers)
     
-    dropdown = []
-    dropdown.append(st.selectbox('Select a company of interest :', tickers, index=list(tickers).index('DBS')))
+    #dropdown = []
+    #dropdown.append(st.selectbox('Select a company of interest :', tickers, index=list(tickers).index('DBS')))
     
     with st.spinner('Gathering data...'):  # spinner while loading
         time.sleep(2)
 
-    symb_list = []  # list for storing symbols
-    for i in dropdown:  # for each asset selected
-        val = dict_csv.get(i)  # get symbol from csv file
-        symb_list.append(val)  # append symbol to list
-    ticker = symb_list[0] # forcing to 1 ticker first
+    #symb_list = []  # list for storing symbols
+    #for i in dropdown:  # for each asset selected
+    #    val = dict_csv.get(i)  # get symbol from csv file
+    #    symb_list.append(val)  # append symbol to list
+    #ticker = symb_list[0] # forcing to 1 ticker first
     #st.write(f'Ticker : {ticker}')
+    ticker = 'SPY'
 
 
     import plotly.express as px
-    if len(dropdown) > 0:  # if user selects at least one asset
+    if ticker != None: #len(dropdown) > 0:  # if user selects at least one asset
         df = download_ticker(ticker)
 
         fig_date = df['date_local'] #df['Date']
@@ -118,19 +119,23 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks TA'
         # fig.add_trace(px.bar(df, x=fig_date, y=fig_vol, title='Volume'))
 
         # Update layout for better readability
-        fig.update_layout(title = f'{dropdown[0]} [{ticker}]',
+        fig.update_layout(title = f'S&P 500 [{ticker}]',
                         legend_title="Legends",
                         plot_bgcolor='black',
                         paper_bgcolor='black',
                         font=dict(color='white'),
                         showlegend=True,
                         xaxis_rangeslider_visible=False)
-
+        
+        fig = px.line(df, x=fig_date, y=df['Adj Close'], title=ticker)
+        #fig_vix = px.line(download_ticker('^VIX'), x='date_local', y='Adj Close', title='VIX')
+        #fig.add_trace(px.line(download_ticker('^VIX'), x='date_local', y='Adj Close', title='VIX'))
+        #fig_sti = px.line(download_ticker('^STI'), x='date_local', y='Adj Close', title='STI')
+        #fig.add_trace(px.line(download_ticker('^STI'), x='date_local', y='Adj Close', title='STI'))
 
         # Remove gridlines
-        fig.update_xaxes(showgrid=False, type='category')
         fig.update_yaxes(showgrid=False)
-        
+
         # Add range selector buttons
         fig.update_xaxes(
             #rangeslider=dict(visible=True, bgcolor='rgba(255,255,255,255)',),
@@ -142,6 +147,8 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks TA'
                     dict(count=2, label='2Y', step='year', stepmode='backward'),
                     dict(count=1, label='1Y', step='year', stepmode='backward'),
                     dict(count=6, label='6M', step='month', stepmode='backward'),
+                    dict(count=3, label='3M', step='month', stepmode='backward'),
+                    dict(count=1, label='1M', step='month', stepmode='backward'),
                     dict(count=1, label='YTD', step='year', stepmode='todate'),
                     ])
             )
@@ -257,7 +264,7 @@ if(selected == sidebar_menu_list[1]):  # if user selects 'Stocks TA'
         #    fig.add_annotation(annotation)
 
         # Remove gridlines
-        fig.update_xaxes(showgrid=False, type='category')
+        # fig.update_xaxes(showgrid=False, type='category')
         fig.update_yaxes(showgrid=False, row=1, col=1)
         fig.update_yaxes(showgrid=False, row=2, col=1)
         fig.update_yaxes(showgrid=False, row=3, col=1)
@@ -275,6 +282,8 @@ if(selected == sidebar_menu_list[1]):  # if user selects 'Stocks TA'
                     dict(count=2, label='2Y', step='year', stepmode='backward'),
                     dict(count=1, label='1Y', step='year', stepmode='backward'),
                     dict(count=6, label='6M', step='month', stepmode='backward'),
+                    dict(count=3, label='3M', step='month', stepmode='backward'),
+                    dict(count=1, label='1M', step='month', stepmode='backward'),
                     dict(count=1, label='YTD', step='year', stepmode='todate'),
                     ])
             ), 
