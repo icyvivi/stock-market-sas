@@ -26,6 +26,11 @@ from prophet.plot import plot_plotly
 import time  # time library
 from streamlit_option_menu import option_menu  # select_options library
 
+import dash
+from dash import Dash, dcc, html, Input, Output
+import dash_core_components as dcc
+import dash_html_components as html
+
 
 ##########
 # Functions
@@ -65,7 +70,7 @@ dict_csv = pd.read_csv('ticker_mapping.csv', header=None, index_col=0).to_dict()
 # Page title
 st.set_page_config(page_title='SAS - Investment Simplified through Data Analytics', layout="wide", #initial_sidebar_state="expanded", 
 page_icon='🏗️')
-st.title('🏗️ SAS - Investment Simplified through Data Analytics')
+st.title('🏗️ SAS - Investment Simplified')
 
 st.sidebar.write('''# SAS ''')
 with st.sidebar: 
@@ -98,7 +103,6 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks TA'
     ticker = 'SPY'
 
 
-    import plotly.express as px
     if ticker != None: #len(dropdown) > 0:  # if user selects at least one asset
         df = download_ticker(ticker)
 
@@ -138,6 +142,7 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks TA'
                         paper_bgcolor='black',
                         font=dict(color='white'),
                         showlegend=True,
+                        uirevision=True,
                         xaxis_rangeslider_visible=False)
         
         #fig = px.line(df, x=fig_date, y=df['Adj Close'], title=ticker)

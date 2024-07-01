@@ -4,6 +4,7 @@ scikit-learn
 altair
 
 ta
+dash
 matplotlib==3.5.2
 pandas==1.4.3
 numpy==1.23.0
