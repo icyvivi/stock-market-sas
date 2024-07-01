@@ -132,11 +132,11 @@ if(selected == sidebar_menu_list[0]):  # if user selects 'Stocks TA'
 
         #fig.update_layout(title="S&P500 vs. VIX")
         fig.update_xaxes(title_text="Date")
-        fig.update_yaxes(title_text="S&P500", secondary_y=False)
+        fig.update_yaxes(title_text="S&P 500", secondary_y=False)
         fig.update_yaxes(title_text="VIX", secondary_y=True)
 
         # Update layout for better readability
-        fig.update_layout(#title = f'S&P 500 [{ticker}]',
+        fig.update_layout(title = f'United States',
                         legend_title="Legends",
                         plot_bgcolor='black',
                         paper_bgcolor='black',
